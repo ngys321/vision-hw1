@@ -457,28 +457,145 @@ image sub_image(image a, image b)
 image make_gx_filter()
 {
     // TODO
-    return make_image(1,1,1);
+    image im = make_image(3,3,1);
+    im.data[im.w * im.h * 0 + im.w * 0 + 0] = -1.0;
+    im.data[im.w * im.h * 0 + im.w * 0 + 1] = 0.0;
+    im.data[im.w * im.h * 0 + im.w * 0 + 2] = 1.0;
+    im.data[im.w * im.h * 0 + im.w * 1 + 0] = -2.0;
+    im.data[im.w * im.h * 0 + im.w * 1 + 1] = 0.0;
+    im.data[im.w * im.h * 0 + im.w * 1 + 2] = 2.0;
+    im.data[im.w * im.h * 0 + im.w * 2 + 0] = -1.0;
+    im.data[im.w * im.h * 0 + im.w * 2 + 1] = 0.0;
+    im.data[im.w * im.h * 0 + im.w * 2 + 2] = 1.0;
+
+    return im;
 }
 
 image make_gy_filter()
 {
     // TODO
-    return make_image(1,1,1);
+    image im = make_image(3,3,1);
+    im.data[im.w * im.h * 0 + im.w * 0 + 0] = -1.0;
+    im.data[im.w * im.h * 0 + im.w * 0 + 1] = -2.0;
+    im.data[im.w * im.h * 0 + im.w * 0 + 2] = -1.0;
+    im.data[im.w * im.h * 0 + im.w * 1 + 0] = 0.0;
+    im.data[im.w * im.h * 0 + im.w * 1 + 1] = 0.0;
+    im.data[im.w * im.h * 0 + im.w * 1 + 2] = 0.0;
+    im.data[im.w * im.h * 0 + im.w * 2 + 0] = 1.0;
+    im.data[im.w * im.h * 0 + im.w * 2 + 1] = 2.0;
+    im.data[im.w * im.h * 0 + im.w * 2 + 2] = 1.0;
+
+    return im;
 }
 
 void feature_normalize(image im)
 {
     // TODO
+    float min = 10000.0;
+    float max = -10000.0;
+    for(int c = 0; c < im.c; c++)
+    {
+        for(int y = 0; y < im.h; y++)
+        {
+            for(int x = 0; x < im.w; x++)
+            {
+                if(im.data[im.w * im.h * c + im.w * y + x] < min)
+                {
+                    min = im.data[im.w * im.h * c + im.w * y + x];
+                }
+                if(im.data[im.w * im.h * c + im.w * y + x] > max)
+                {
+                    max = im.data[im.w * im.h * c + im.w * y + x];
+                }
+            }
+        }
+    }
+
+    for(int c = 0; c < im.c; c++)
+    {
+        for(int y = 0; y < im.h; y++)
+        {
+            for(int x = 0; x < im.w; x++)
+            {
+                im.data[im.w * im.h * c + im.w * y + x]
+                 = (im.data[im.w * im.h * c + im.w * y + x] - min) / (max - min);
+            }
+        }
+    }
 }
 
 image *sobel_image(image im)
 {
     // TODO
-    return calloc(2, sizeof(image));
+    image* im_pointer = (image*) calloc(2, sizeof(image)); // "두개의 image 구조체를 담는 image 구조체 배열" 을 가리키는 image 구조체 포인터 im_pointer 선언 
+
+    image magnitude = make_image(im.w, im.h, 1);
+    image direction = make_image(im.w, im.h, 1);
+
+    image gx_filter = make_gx_filter();
+    image gy_filter = make_gy_filter();
+
+    image gx_im = convolve_image(im, gx_filter, 0);
+    image gy_im = convolve_image(im, gy_filter, 0);
+
+    for(int y = 0; y < im.h; y++)
+    {
+        for(int x = 0; x < im.w; x++)
+        {
+            float gx = gx_im.data[gx_im.w * gx_im.h * 0 + gx_im.w * y + x];
+            float gy = gy_im.data[gy_im.w * gy_im.h * 0 + gy_im.w * y + x];
+            
+            magnitude.data[magnitude.w * magnitude.h * 0 + magnitude.w * y + x]
+             = sqrt(gx*gx + gy*gy);
+            direction.data[direction.w * direction.h * 0 + direction.w * y + x]
+             = atan2(gy, gx);
+        }
+    }
+
+    im_pointer[0] = magnitude;
+    im_pointer[1] = direction;
+
+
+    return im_pointer;
 }
 
 image colorize_sobel(image im)
 {
     // TODO
-    return make_image(1,1,1);
+    image* sobel_img = sobel_image(im);
+
+    image magnitude = sobel_img[0];
+    image direction = sobel_img[1]; 
+
+    // magnitude 와 direction 값을 반드시 normalize 해야 함. 
+    // 그렇지않으면, 그 값이 매우 크게 튈 수 있고, 그로 인해 hsv 값으로 아주 큰 값이 저장될 수 있음.
+    // hsv_to_rgb 함수는 hsv 값이 0.0 ~ 1.0 사이 범위를 가진다는 가정하에 코드가 작성되어 있으므로,
+    // 매우 큰 값이 hsv 값으로 저장되면, hsv 에서 rgb 로 변환이 이루어지지 않을 수 있음.
+    feature_normalize(magnitude); 
+    feature_normalize(direction); 
+
+    image hsv_matrix = make_image(im.w, im.h, im.c);
+
+    
+    // set HSV values
+    for(int y = 0; y < im.h; y++)
+    {
+        for(int x = 0; x < im.w; x++)
+        {
+            float H = direction.data[im.w*im.h*0 + im.w*y + x];
+            float S = magnitude.data[im.w*im.h*0 + im.w*y + x];
+            float V = magnitude.data[im.w*im.h*0 + im.w*y + x];
+
+            hsv_matrix.data[im.w*im.h*0 + im.w*y + x] = H;
+            hsv_matrix.data[im.w*im.h*1 + im.w*y + x] = S;
+            hsv_matrix.data[im.w*im.h*2 + im.w*y + x] = V;
+        }
+    }
+    // convert HSV to RGB
+    hsv_to_rgb(hsv_matrix);
+
+
+
+    
+    return hsv_matrix;
 }
