@@ -243,26 +243,60 @@ image convolve_image(image im, image filter, int preserve)
 image make_highpass_filter()
 {
     // TODO
-    return make_image(1,1,1);
+    image im = make_image(3,3,1);
+    im.data[im.w * im.h * 0 + im.w * 0 + 0] = 0.0; // when (channel,row,column) = (0,0,0)
+    im.data[im.w * im.h * 0 + im.w * 0 + 1] = -1.0; // when (channel,row,column) = (0,0,1)
+    im.data[im.w * im.h * 0 + im.w * 0 + 2] = 0.0; // when (channel,row,column) = (0,0,2)
+    im.data[im.w * im.h * 0 + im.w * 1 + 0] = -1.0; // when (channel,row,column) = (0,1,0)
+    im.data[im.w * im.h * 0 + im.w * 1 + 1] = 4.0; // when (channel,row,column) = (0,1,1)
+    im.data[im.w * im.h * 0 + im.w * 1 + 2] = -1.0; // when (channel,row,column) = (0,1,2)
+    im.data[im.w * im.h * 0 + im.w * 2 + 0] = 0.0; // when (channel,row,column) = (0,2,0)
+    im.data[im.w * im.h * 0 + im.w * 2 + 1] = -1.0; // when (channel,row,column) = (0,2,1)
+    im.data[im.w * im.h * 0 + im.w * 2 + 2] = 0.0; // when (channel,row,column) = (0,2,2)
+
+    return im;
 }
 
 image make_sharpen_filter()
 {
     // TODO
-    return make_image(1,1,1);
+    image im = make_image(3,3,1);
+    im.data[im.w * im.h * 0 + im.w * 0 + 0] = 0.0; // when (channel,row,column) = (0,0,0)
+    im.data[im.w * im.h * 0 + im.w * 0 + 1] = -1.0; // when (channel,row,column) = (0,0,1)
+    im.data[im.w * im.h * 0 + im.w * 0 + 2] = 0.0; // when (channel,row,column) = (0,0,2)
+    im.data[im.w * im.h * 0 + im.w * 1 + 0] = -1.0; // when (channel,row,column) = (0,1,0)
+    im.data[im.w * im.h * 0 + im.w * 1 + 1] = 5.0; // when (channel,row,column) = (0,1,1)
+    im.data[im.w * im.h * 0 + im.w * 1 + 2] = -1.0; // when (channel,row,column) = (0,1,2)
+    im.data[im.w * im.h * 0 + im.w * 2 + 0] = 0.0; // when (channel,row,column) = (0,2,0)
+    im.data[im.w * im.h * 0 + im.w * 2 + 1] = -1.0; // when (channel,row,column) = (0,2,1)
+    im.data[im.w * im.h * 0 + im.w * 2 + 2] = 0.0; // when (channel,row,column) = (0,2,2)
+
+    return im;
 }
 
 image make_emboss_filter()
 {
     // TODO
-    return make_image(1,1,1);
+    image im = make_image(3,3,1);
+    im.data[im.w * im.h * 0 + im.w * 0 + 0] = -2.0; // when (channel,row,column) = (0,0,0)
+    im.data[im.w * im.h * 0 + im.w * 0 + 1] = -1.0; // when (channel,row,column) = (0,0,1)
+    im.data[im.w * im.h * 0 + im.w * 0 + 2] = 0.0; // when (channel,row,column) = (0,0,2)
+    im.data[im.w * im.h * 0 + im.w * 1 + 0] = -1.0; // when (channel,row,column) = (0,1,0)
+    im.data[im.w * im.h * 0 + im.w * 1 + 1] = 1.0; // when (channel,row,column) = (0,1,1)
+    im.data[im.w * im.h * 0 + im.w * 1 + 2] = 1.0; // when (channel,row,column) = (0,1,2)
+    im.data[im.w * im.h * 0 + im.w * 2 + 0] = 0.0; // when (channel,row,column) = (0,2,0)
+    im.data[im.w * im.h * 0 + im.w * 2 + 1] = 1.0; // when (channel,row,column) = (0,2,1)
+    im.data[im.w * im.h * 0 + im.w * 2 + 2] = 2.0; // when (channel,row,column) = (0,2,2)
+
+    return im;
 }
 
-// Question 2.2.1: Which of these filters should we use preserve when we run our convolution and which ones should we not? Why?
-// Answer: TODO
+// Question 2.2.1: Which of these filters should we use preserve 
+// when we run our convolution and which ones should we not? Why?
+// Answer: highpass_filter - no preserve, sharpen_filter - preserve, emboss_filter - preserve
 
 // Question 2.2.2: Do we have to do any post-processing for the above filters? Which ones and why?
-// Answer: TODO
+// Answer: Clamp, cuz it needs to fix overflow and underflow of pixel values in the result images.
 
 image make_gaussian_filter(float sigma)
 {
