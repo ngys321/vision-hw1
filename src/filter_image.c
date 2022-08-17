@@ -301,19 +301,157 @@ image make_emboss_filter()
 image make_gaussian_filter(float sigma)
 {
     // TODO
-    return make_image(1,1,1);
+    image new_im = make_image(2*sigma+1, 2*sigma+1, 1);
+
+    float sum = 0.0;
+    for(int y = 0; y < new_im.h; y++)
+    {
+        for(int x = 0; x < new_im.w; x++)
+        {
+            new_im.data[new_im.w * new_im.h * 0 + new_im.w * y + x]
+             = (1.0/(TWOPI*sigma*sigma)) * exp(-1.0*( (((float)x-sigma)*((float)x-sigma) + ((float)y-sigma)*((float)y-sigma))/(2.0*sigma*sigma) ));
+            sum = sum + (1.0/(TWOPI*sigma*sigma)) * exp(-1.0*( (((float)x-sigma)*((float)x-sigma) + ((float)y-sigma)*((float)y-sigma))/(2.0*sigma*sigma) ));
+        }
+    }
+
+    for(int y = 0; y < new_im.h; y++)
+    {
+        for(int x = 0; x < new_im.w; x++)
+        {
+            new_im.data[new_im.w * new_im.h * 0 + new_im.w * y + x]
+             = (1.0/sum) * new_im.data[new_im.w * new_im.h * 0 + new_im.w * y + x];
+        }
+    }
+
+    return new_im;
 }
 
 image add_image(image a, image b)
 {
     // TODO
-    return make_image(1,1,1);
+    assert(a.h == b.h && a.w == b.w);
+
+    image new_im;
+
+    if(a.c != b.c)
+    {
+        if(a.c > b.c && b.c == 1)
+        {
+            new_im = make_image(a.w, a.h, a.c);
+
+            for(int c = 0; c < new_im.c; c++)
+            {
+                for(int y = 0; y < new_im.h; y++)
+                {
+                    for(int x = 0; x < new_im.w; x++)
+                    {
+                        new_im.data[new_im.w * new_im.h * c + new_im.w * y + x]
+                        = a.data[new_im.w * new_im.h * c + new_im.w * y + x] + b.data[new_im.w * new_im.h * 0 + new_im.w * y + x];
+                    }
+                }
+            }
+
+        }
+        else if(b.c > a.c && a.c == 1) //when a.c < b.c
+        {
+            new_im = make_image(b.w, b.h, b.c);
+
+            for(int c = 0; c < new_im.c; c++)
+            {
+                for(int y = 0; y < new_im.h; y++)
+                {
+                    for(int x = 0; x < new_im.w; x++)
+                    {
+                        new_im.data[new_im.w * new_im.h * c + new_im.w * y + x]
+                        = a.data[new_im.w * new_im.h * 0 + new_im.w * y + x] + b.data[new_im.w * new_im.h * c + new_im.w * y + x];
+                    }
+                }
+            }
+
+        }
+    }
+    else if(a.c == b.c)
+    {
+        new_im = make_image(a.w, a.h, a.c);
+
+        for(int c = 0; c < new_im.c; c++)
+        {
+            for(int y = 0; y < new_im.h; y++)
+            {
+                for(int x = 0; x < new_im.w; x++)
+                {
+                    new_im.data[new_im.w * new_im.h * c + new_im.w * y + x]
+                    = a.data[new_im.w * new_im.h * c + new_im.w * y + x] + b.data[new_im.w * new_im.h * c + new_im.w * y + x];
+                }
+            }
+        }
+    }
+
+    return new_im;
 }
 
 image sub_image(image a, image b)
 {
     // TODO
-    return make_image(1,1,1);
+    assert(a.h == b.h && a.w == b.w);
+
+    image new_im;
+
+    if(a.c != b.c)
+    {
+        if(a.c > b.c && b.c == 1)
+        {
+            new_im = make_image(a.w, a.h, a.c);
+
+            for(int c = 0; c < new_im.c; c++)
+            {
+                for(int y = 0; y < new_im.h; y++)
+                {
+                    for(int x = 0; x < new_im.w; x++)
+                    {
+                        new_im.data[new_im.w * new_im.h * c + new_im.w * y + x]
+                        = a.data[new_im.w * new_im.h * c + new_im.w * y + x] - b.data[new_im.w * new_im.h * 0 + new_im.w * y + x];
+                    }
+                }
+            }
+
+        }
+        else if(b.c > a.c && a.c == 1) //when a.c < b.c
+        {
+            new_im = make_image(b.w, b.h, b.c);
+
+            for(int c = 0; c < new_im.c; c++)
+            {
+                for(int y = 0; y < new_im.h; y++)
+                {
+                    for(int x = 0; x < new_im.w; x++)
+                    {
+                        new_im.data[new_im.w * new_im.h * c + new_im.w * y + x]
+                        = a.data[new_im.w * new_im.h * 0 + new_im.w * y + x] - b.data[new_im.w * new_im.h * c + new_im.w * y + x];
+                    }
+                }
+            }
+
+        }
+    }
+    else if(a.c == b.c)
+    {
+        new_im = make_image(a.w, a.h, a.c);
+
+        for(int c = 0; c < new_im.c; c++)
+        {
+            for(int y = 0; y < new_im.h; y++)
+            {
+                for(int x = 0; x < new_im.w; x++)
+                {
+                    new_im.data[new_im.w * new_im.h * c + new_im.w * y + x]
+                    = a.data[new_im.w * new_im.h * c + new_im.w * y + x] - b.data[new_im.w * new_im.h * c + new_im.w * y + x];
+                }
+            }
+        }
+    }
+
+    return new_im;
 }
 
 image make_gx_filter()
